@@ -1,0 +1,157 @@
+<!doctype html>
+<html ng-app="ghNotifications">
+  <head>
+    <meta charset="utf-8">
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" type="text/css" href="bower_components/angular-material/angular-material.css">
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css styles/main.css -->
+    <link href="styles/main.css" rel="stylesheet">
+    <!-- endbuild -->
+  </head>
+  <body ng-controller="main_Ctrl as main" ng-init="main.loading = false; main.showLogin = true;">
+    <div class="loginBlock" ng-if="main.showLogin">
+         <md-content layout-padding class="autoScroll" >
+            <form ng-submit="main.doLogin(user)">
+                <md-input-container flex>
+                    <label>GitHub User Name</label>
+                    <input ng-model="user.name">
+                </md-input-container>
+                <md-input-container flex>
+                    <label>GitHub Password</label>
+                    <input type="password" ng-model="user.pass">
+                </md-input-container>
+                <section layout="row" layout-sm="column" layout-align="center center">
+                    <md-button type="submit" class="md-raised">Log In</md-button>
+                </section>
+            </form>
+            <div layout="row"  layout-align="space-around" ng-if="main.loading">
+              <md-progress-circular class="md-hue-2" md-mode="indeterminate"></md-progress-circular>
+            </div>
+        </md-content>
+
+        
+        
+    </div>
+
+    <md-content>
+        <md-list>
+          <md-list-item class="md-3-line" ng-repeat="event in main.events">
+            <div class="flex-container flex-column">
+                <div class="flex-1">
+                    <img ng-src="{{event.actor.avatar_url}}" class="face round" alt="{{event.actor.login}}">
+                </div>
+                
+                <div class="flex-1 text-center">
+                    {{event.actor.login}}
+                </div>
+            </div>
+
+            <div class="md-list-item-text">
+                <div class="flex-container">
+                    <div class="flex-2">
+                        <div class="flex-container">
+                            <div class="flex-1">
+                                <a ng-click="main.open(event.repo.url)">{{event.repo.name}}</a>
+                            </div>  
+                            <!-- <div class="flex-1 text-right">
+                                {{event.created_at}}
+                            </div>   -->
+                        </div>
+                            
+                        
+                        <h4><strong>{{event.payload.action || event.type}}: </strong></h4>
+
+                        <span ng-switch on="event.type">
+
+                            <span ng-switch-when="IssuesEvent">
+                                <p>{{event.payload.issue.body}}</p>
+                            </span>
+
+                            <span ng-switch-when="IssueCommentEvent">
+                                <p><a ng-click="main.open(event.payload.comment.html_url)">{{event.payload.comment.body | issueComment }}</a></p>
+                            </span>
+
+                            <span ng-switch-when="PushEvent">
+                                <p>Head is now at <a ng-click="main.open(event.repo.url+'/commits/'+event.payload.head)">{{event.payload.head}}</a></p>
+                                <p><strong>Commits</strong></p>
+                                <div ng-repeat="commit in event.payload.commits">
+                                    <p>{{$index+1}}. {{commit.author.name}}: <a ng-click="main.open(commit.url)">{{commit.message}}</a></p>
+                                </div>
+                            </span>
+
+                            <span ng-switch-when="CommitCommentEvent">
+                                <p><a ng-click="main.open(event.payload.comment.html_url)">{{event.payload.comment.body | issueComment }}</a></p>
+                            </span>
+
+                            <span ng-switch-when="PullRequestEvent">
+                                <p>Made a pull request:</p>
+                                {{event.payload.pull_request.body}}
+                                <p><strong>Changes</strong></p>
+                                <ul>
+                                    <li><p>Commits: {{event.payload.pull_request.commits}}</p></li>
+                                    <li><p>Files changed: {{event.payload.pull_request.changed_files}}</p></li>
+                                    <li><p>Additions: {{event.payload.pull_request.additions}}</p></li>
+                                    <li><p>Deletions: {{event.payload.pull_request.deletions}}</p></li>
+                                </ul>
+
+                            </span>
+
+
+
+                            <span ng-switch-default>
+
+                            </span>
+
+
+
+                        </span>
+
+
+                        <!-- <h4>{{event.payload.ref}}</h4> -->
+                        
+                    </div>
+                    <div class="flex-1 flex-container flex-column flex-align-center flex-align-end">
+
+                        <div class="flex-1">
+                            <div class="flex-container flex-column">
+                                <div class="flex-1">
+                                    <img ng-src="{{event.org.avatar_url}}" alt="{{event.org.login}}">
+                                </div>
+                                <div class="flex-1">
+                                    {{event.org.login}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="footer-date text-right">
+                    {{event.created_at}}
+                </p>
+            </div>
+            <md-divider md-inset ng-if="!$last"></md-divider>
+          </md-list-item>
+        </md-list>
+    </md-content>
+
+    <!-- build:js scripts/vendor.js -->
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-material/angular-material.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.js"></script>
+    <!-- bower:js -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js scripts/popup.js -->
+    <script src="scripts/app.js"></script>
+    <script src="scripts/main_Ctrl.js"></script>
+    <script src="scripts/ghData_Factory.js"></script>
+    <script src="scripts/urlFixer_Filter.js"></script>
+    <script src="scripts/issueComment_Filter.js"></script>
+    
+    <!-- endbuild -->
+  </body>
+</html>
